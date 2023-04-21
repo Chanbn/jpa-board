@@ -22,6 +22,7 @@ public class PostInfoDto {
 	private LocalDateTime createdDate;
 	private MemberInfoDto writer;
 	private List<CommentGetDto> comments;
+	private String category;
 	
 	public PostInfoDto(Post post){
 		
@@ -34,6 +35,7 @@ public class PostInfoDto {
 				.map(comment -> new CommentGetDto(comment))
 				.collect(Collectors.toList());
 		this.createdDate = post.getCreatedDate();
+		this.category=post.getCategory();
 	}
 
 	

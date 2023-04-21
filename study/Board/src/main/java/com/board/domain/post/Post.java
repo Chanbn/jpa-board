@@ -52,11 +52,14 @@ public class Post extends BaseTimeEntity {
 	@Column(nullable = false)
 	private String email;
 	private String deleteYn;
-	 
+
+	private String category;
+	
 	  @Builder
-	    public Post(String title, String content) {
+	    public Post(String title, String content, String category) {
 	        this.title = title;
 	        this.content = content;
+	        this.category = category;
 	    }
 	  
 	  @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
