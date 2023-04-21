@@ -24,11 +24,13 @@ public class PostSaveDto {
 //	private String username;
 	private MultipartFile[] files; 
 	private MemberInfoDto writer;
+	private String category;
 	
-	public PostSaveDto(String title, String content) {
+	public PostSaveDto(String title, String content,String category) {
 		// TODO Auto-generated constructor stub
 		this.title=title;
 		this.content=content;
+		this.category=category;
 	}
 	
 	public void setWriter(MemberInfoDto writer) {

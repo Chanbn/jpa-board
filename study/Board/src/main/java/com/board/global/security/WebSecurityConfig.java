@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.board.global.security.handler.CustomAccessDeniedHandler;
+
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -27,8 +29,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	protected void configure(HttpSecurity http) throws Exception {
 		// TODO Auto-generated method stub
 		http.authorizeRequests()
-		.antMatchers("/member/**","/board/list").permitAll()
-		.antMatchers("/myPage/myinfo","/myPage/myContentList","/myPage/myCommentList","/myPage/home","/board/write").authenticated()
+		.antMatchers("/board/list","/category/**").permitAll()
+		.antMatchers("/member/profile","/member/postinfo","/member/commentInfo","/myPage/home","/board/write").authenticated()
 		.and()
 		.formLogin()
 		.loginPage("/member/login")
@@ -41,7 +43,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 		.logout()
 		.logoutUrl("/view/logoutProc")
 		.logoutSuccessUrl("/board/list")
-		.and().csrf();
+		.and()
+		.exceptionHandling()
+		.accessDeniedHandler(new CustomAccessDeniedHandler())
+		.and()
+		.csrf();
 	}
 	
 	@Bean
