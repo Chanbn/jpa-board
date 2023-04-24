@@ -38,5 +38,8 @@ public class FileDto {
 		this.createdDate = file.getCreatedDate();
 	}
 	
+	public boardFile toEntity() {
+		return boardFile.builder().boardIdx(boardIdx).idx(idx).originalName(originalName).saveName(saveName).imageSize(imageSize).deleteYn(deleteYn).build();	
+				}
 	
 }

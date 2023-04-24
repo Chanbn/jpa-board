@@ -20,6 +20,7 @@ import com.board.domain.member.exception.MemberException;
 import com.board.domain.member.exception.MemberExceptionType;
 import com.board.domain.post.Post;
 import com.board.domain.post.repository.PostRepository;
+import com.board.domain.post.service.PostService;
 import com.board.exception.AttachFileException;
 import com.board.file.boardFile;
 import com.board.file.dto.FileDto;
@@ -65,7 +66,6 @@ List<boardFile> attachList = new ArrayList<>();
 				
 				File target = new File(uploadPath,saveName);
 				file.transferTo(target);
-				
 				boardFile attach = boardFile.builder().originalName(file.getOriginalFilename()).saveName(saveName).imageSize(file.getSize()).build();
 				System.out.println(attach.getOriginalName()+attach.getSaveName());
 				attachList.add(attach);
@@ -73,6 +73,8 @@ List<boardFile> attachList = new ArrayList<>();
 				Post pppost = postRepository.findById(boardIdx).orElseThrow();
 				System.out.println("타이틀타이틀"+pppost.getTitle());
 				//				attach.addFilese(postRepository.findByIdx(boardIdx).orElseThrow(()-> new FileException(FileExceptionType.FILE_CAN_NOT_SAVE)));
+				attach.setPost(pppost);
+				attach.setDeleteYn("N");
 				fileRepository.save(attach);
 			} catch (IOException e) {
 				throw new FileException(FileExceptionType.FILE_CAN_NOT_SAVE);
@@ -98,10 +100,22 @@ List<boardFile> attachList = new ArrayList<>();
 	public List<FileDto> getFileList(Long idx) {
 		// TODO Auto-generated method stub
 		List<FileDto> list = fileRepository.findByPostIdx(idx).stream()
+											.filter(file->"N".equals(file.getDeleteYn()))
 											.map(file -> new FileDto(file))
 											.collect(Collectors.toList())
 											;
+		
 		return list;
+	}
+
+	@Override
+	public void saveFile(FileDto fileDto) {
+		// TODO Auto-generated method stub
+		Post post = postRepository.getById(fileDto.getBoardIdx());
+		boardFile bf= fileDto.toEntity();
+		bf.setPost(post);
+		fileRepository.save(bf);
+		
 	}
 
 }

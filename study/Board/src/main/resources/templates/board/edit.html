@@ -14,12 +14,7 @@
   <div th:replace="/fragments/nav.html :: fragment-nav"></div>
 <div class="col-lg-6" style="text-align:center">
 <form role="form" th:object=${post} enctype="multipart/form-data" >
-<!-- th:action="@{/board/write}" method="post" enctype="multipart/form-data" -->
-    <input type="hidden" 
-           th:name="${_csrf.parameterName}" 
-           th:value="${_csrf.token}" />
-    <input type="hidden" th:if="*{idx != null and idx > 0}" th:field="*{idx}" />
-<!-- 	<input type="hidden" th:field="*{changeYn}" value="N"> -->
+
 <table class="table">
   <thead> 
     <tr>
@@ -73,22 +68,25 @@
 	<input type="hidden" name="fileIdxs" th:value="${row.idx}">
 	<input type="text"  class="upload-name" th:value="${row.originalName}" id="filename0" readonly/>
 	<label th:for="|file_${status.index}|" class="control-label">찾아보기</label>
-	<input type="hidden" id="0">
-	<input type="file" name="files" th:id="|file_${status.index}|"  style="display:none;" onchange="changeFilename(this)"> 
+	<input type="hidden" th:id="${status.index}">
+	<!-- <input type="file" name="files" th:id="|file_${status.index}|"  style="display:none;" onchange="changeFilename(this)"> 
+	 -->
+	<input type="file" name="files" th:id="|file_${status.index}|" style="display:none;" onchange="changeFilename(this)" value="${row.originalName}">
+	
 	<button th:if="${status.first}" type="button" onclick="addFile()">+
 	<i class="fa fa-plus" aria-hidden="true" ></i>
 	</button>	
 	<button type="button" onclick="removeFile(this)">-
 	<i class="fa fa-minus" aria-hidden="true"></i>
 	</button>
-	<input type="hidden" id="0">
+	<input type="hidden" th:id="${status.index}">
 	</div>
 </div>
 
 <div id="btnDiv" class="col-lg-6">
 
 <div style="float:left">
-<a th:href="@{'/board/list?pageNum=0'}" type="button" class="btn btn-secondary">목록</a>
+<a th:href="@{'/board/'+${category}+'/list}" type="button" class="btn btn-secondary">목록</a>
 </div>
 <div style="float:right">
 <button type="button" class="btn btn-success" onclick="submit_button()">등록</button>
@@ -115,6 +113,14 @@
 	
 	let fileIdx = fileList.length; 
 	let fileArry = [];
+	let existFile = [];
+	let existFileIdx = [];
+	$(document).ready(function() {
+	    for(let i = 0; i < fileIdx; i++){	    	
+	    	existFile[i] = false;
+	    	existFileIdx[i] = fileList[i].idx
+	    }
+	});
 
 	
 	
@@ -134,7 +140,7 @@
 				<div class="col-sm-10" id="imgfileList${fileIdx}">
 				<input type="text" class="upload-name" value="파일찾기" id="filename${fileIdx}" readonly/>
 				<label for="file_${fileIdx}" class="control-label">찾아보기</label>
-			<input type="hidden" id="${fileIdx}">
+				<input type="hidden" id="${fileIdx}">
 				<input type="file" name="files" id="file_${fileIdx}"  style="display:none;" onchange="changeFilename(this)"> 
 				<button type="button" onclick="removeFile(this)">-
 				<i class="fa fa-minus" aria-hidden="true"></i>
@@ -148,11 +154,14 @@
 
 	
 	function removeFile(elem){
+
 		var currentVal = $(elem).next().prop('id');
-		alert($(elem).next().prop('id'));
 		const prevTag = $(elem).prev().prop('tagName');
+		existFile[currentVal] = true;
+		fileArry[currentVal] = true;
 		if(prevTag === 'BUTTON'){
 			const file=$(elem).prevAll('input[type="file"]');
+
 			const filename = $(elem).prevAll('input[type="text"]');
 			file.val('');
 			filename.val('파일찾기');
@@ -160,9 +169,7 @@
 			$(elem).prevAll('input[name="fileIdxs"]').remove();
 			return false;
 		}
-		
-		fileArry[currentVal] = true;
-		
+
 		const target = $(elem).parents('div[data-name="fileDiv"]');
 		target.remove();
 
@@ -180,16 +187,22 @@
 	
 	
 	function submit_button(){
-		
+		var category = /*[[${category}]]*/ '';
+		var idx = /*[[${post.idx}]]*/'';
 		const title = document.getElementById("title").value;
 		const content = document.getElementById("content").value;
 		const fileDivs = $('div[data-name="fileDiv"]');
 		const sendingData = new FormData();
+		alert(fileIdx);
 		const files=[];
-		
+		sendingData.append('idx',idx);
 		sendingData.append('title',title);
 		sendingData.append('content',content);
-		alert($('#file_0').val()+"!!!!");
+		for(let i=0;i<existFile.length;i++){
+			if(existFile[i]===false){
+				sendingData.append('existIdx',existFileIdx[i]);
+			}
+		}
 		for(let i=0;i<fileArry.length;i++){
 			if(fileArry[i]===false){
 				console.log("here is file... sendingData boxing..."+$('#file_'+i)[0].files[0].name);
@@ -198,14 +211,14 @@
 		}
 		$.ajax({
 			type:"POST",
-			url:"/board/posts",
+			url:"/board/"+category+"/posts",
 			processData: false,  // 데이터 객체를 문자열로 바꿀지에 대한 값이다. true면 일반문자...
 		    contentType: false,  // 해당 타입을 true로 하면 일반 text로 구분되어 진다.
 		    data: sendingData,  //위에서 선언한 fromdata
 			success: function(data){
 				if(data){
 					alert("등록되었습니다.");
-					window.location.href = '/board/list';
+					window.location.href = '/board/'+category+'/list';
 				}
 			},
 			error : function(request,status,error){

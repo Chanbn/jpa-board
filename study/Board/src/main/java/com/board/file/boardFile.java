@@ -3,6 +3,7 @@ package com.board.file;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -13,8 +14,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import com.board.domain.BaseTimeEntity;
 import com.board.domain.post.Post;
+import com.board.file.dto.FileDto;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -44,15 +48,17 @@ public class boardFile extends BaseTimeEntity{
 
 	/** 파일 크기 */
 	private long imageSize;
-	
+	@ColumnDefault("N")
 	private String deleteYn;
 	
 	
 	@Builder
-	public boardFile(String originalName,String saveName, long imageSize) {
+	public boardFile(Long idx,Long boardIdx,String originalName,String saveName, long imageSize,String deleteYn) {
+	this.idx = idx;
 	this.originalName = originalName;
 	this.saveName = saveName;
 	this.imageSize = imageSize;
+	this.deleteYn=deleteYn;
 	}
 	
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -62,4 +68,5 @@ public class boardFile extends BaseTimeEntity{
 	public void setPost(Post post) {
 		this.post = post;
 	}
+	
 }

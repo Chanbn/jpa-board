@@ -10,13 +10,13 @@
           <a class="nav-link active" aria-current="page" th:href="@{/home}" style='color: #fff;'>home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#" style='color: #fff;'>공지사항</a>
+          <a class="nav-link" th:href="@{/board/notice/list}" style='color: #fff;'>공지사항</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" th:href="@{/board/list}" style='color: #fff;'>자유게시판</a>
+          <a class="nav-link" th:href="@{/board/free/list}" style='color: #fff;'>자유게시판</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#" style='color: #fff;'>문의사항</a>
+          <a class="nav-link" th:href="@{/board/qna/list}" style='color: #fff;'>문의사항</a>
         </li>
 
       </ul>

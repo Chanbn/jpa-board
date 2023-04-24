@@ -1,5 +1,6 @@
 package com.board.domain.post.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,60 +45,89 @@ public class PostServiceImpl implements PostService {
 	
 @Override
 @Transactional
-public Long save(PostSaveDto postSaveDto) {
+public Post save(PostSaveDto postSaveDto,List<Long> existIdx) {
 	// TODO Auto-generated method stub
-	
-	Post post = postSaveDto.toEntity();
+	Post post;
+	if(postSaveDto.getIdx()!=null) {
+	    Post existingPost = postRepository.findById(postSaveDto.getIdx()).orElseThrow(()-> new PostException(PostExceptionType.WRONG_POST));
+	    existingPost.update(postSaveDto.getTitle(), postSaveDto.getContent());
+	    post = existingPost;
+	} else {
+	    post = postSaveDto.toEntity();
+	}
+
 	Member writer = memberRepository.findByUsername(postSaveDto.getWriter().getUsername()).orElseThrow(()-> new MemberException(MemberExceptionType.NOT_FOUND_MEMBER));
+
 	post.confirmWriter(writer);
-	
+	post.setDeleteYn("N");
     Post savedPost = postRepository.save(post); // Post 엔티티를 먼저 저장하고 반환받은 Post 엔티티
+    if(savedPost.getIdx()!=null) {
+    List<FileDto> getfileList = fileService.getFileList(savedPost.getIdx());
+    if(getfileList!=null) {
+    	for(FileDto file : getfileList) {if(existIdx==null) {
+    		FileDto savedFile = fileService.getFileDetails(file.getIdx());
+    		savedFile.setDeleteYn("Y");
+    		fileService.saveFile(savedFile);     		
+    	}
+    	else if(existIdx!=null&&!existIdx.contains(file.getIdx())) {
+        		FileDto savedFile = fileService.getFileDetails(file.getIdx());
+        		savedFile.setDeleteYn("Y");
+        		fileService.saveFile(savedFile);    			
+    		}
+    	}
+    }
+    }
     if (postSaveDto.getFiles() != null) {
+    	log.debug("post save file get.... :'"+postSaveDto.getFiles().toString()+"'");
         List<boardFile> fileList = fileService.save(postSaveDto.getFiles(), savedPost.getIdx());
+        log.info("post getIdx? :'"+savedPost.getIdx());
         for (boardFile file : fileList) {
             savedPost.addFile(file); // Post 엔티티에 첨부파일 추가
         }
     }
-    return savedPost.getIdx();
+    return savedPost;
 }
 @Override
 public List<PostInfoDto> getPageList(Pageable pageable) {
 	// TODO Auto-generated method stub
+	log.info("postGetPageList......................."+pageable.getPageSize());
 	List<PostInfoDto> list = postRepository.findAll().stream()
+										.filter(post->("N").equals(post.getDeleteYn()))
 										.map(post -> new PostInfoDto(post))
 										.collect(Collectors.toList());
 	return list;
 }
 @Override
-public Page<PostInfoDto> SearchPost(String type, String word, Pageable pageable) {
+public Page<PostInfoDto> SearchPost(String type, String word, Pageable pageable,String category) {
 	// TODO Auto-generated method stub
 	Page<PostInfoDto> pageList = null;
 	switch (type) {
 	case "W":
-		pageList = postRepository.findByWriterUsernameContaining(word, pageable).map(PostInfoDto::new);
+		pageList = postRepository.findByWriterUsernameContainingAndCategoryAndDeleteYn(word, pageable,category,"N").map(PostInfoDto::new);
 		break;
 	case "T":
-		pageList = postRepository.findByTitleContaining(word, pageable).map(PostInfoDto::new);
+		pageList = postRepository.findByTitleContainingAndCategoryAndDeleteYn(word, pageable,category,"N").map(PostInfoDto::new);
 		break;
 	case "TC":
-		pageList = postRepository.findByTitleContainingOrContentContaining(word,word,pageable).map(PostInfoDto::new);
+		pageList = postRepository.findByTitleContainingOrContentContainingAndCategoryAndDeleteYn(word,word,pageable,category,"N").map(PostInfoDto::new);
 		break;
 	default:
-		pageList = postRepository.findAll(pageable).map(PostInfoDto::new);
+		pageList = postRepository.findAllByCategoryAndDeleteYn(pageable,category,"N").map(PostInfoDto::new);
 		break;
 	}
 	return pageList;
 }
 @Override
-public PostInfoDto getPost(Long idx) {
+public PostInfoDto getPost(Long idx,String category) {
 	// TODO Auto-generated method stub
-	PostInfoDto post = new PostInfoDto(postRepository.findByIdx(idx).orElseThrow(()->new PostException(PostExceptionType.WRONG_POST)));
+	PostInfoDto post = new PostInfoDto(postRepository.findByIdxAndCategory(idx,category).orElseThrow(()->new PostException(PostExceptionType.WRONG_POST)));	
 	return post;
+	
 }
 @Override
-public void deletePost(Long boardIdx) {
+public void deletePost(Long boardIdx,String category) {
 	// TODO Auto-generated method stub
-	postRepository.deleteById(boardIdx);
+	postRepository.deleteByIdxAndCategory(boardIdx,category).setDeletedDate(LocalDateTime.now());;
 }
 @Override
 public Page<PostInfoDto> getPostList(String username,Pageable pageable) {
@@ -105,16 +135,17 @@ public Page<PostInfoDto> getPostList(String username,Pageable pageable) {
 	Member writer = memberRepository.findByUsername(username).orElseThrow(()->new MemberException(MemberExceptionType.NOT_FOUND_MEMBER));
 	return postRepository.findByWriterUsername(writer.getUsername(), pageable);
 }
+@Override
+public void managerDeletePost(Long boardIdx, String category) {
+	// TODO Auto-generated method stub
+	Post post = postRepository.findByIdxAndCategory(boardIdx, category).orElseThrow(()->new PostException(PostExceptionType.WRONG_POST));
+	post.setDeleteYn("Y");
+	post.setDeletedDate(LocalDateTime.now());
+	postRepository.save(post);
+}
 
 
 
-
-//@Override
-//public Page<Post> findByTitleContaining(String title,Pageable pageable) {
-//	// TODO Auto-generated method stub
-//	Page<Post> pageList = postRepository.findByTitleContaining(title,pageable);
-//	return pageList;
-//}
 
 
 }

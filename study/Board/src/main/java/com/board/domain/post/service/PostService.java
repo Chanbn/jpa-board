@@ -14,13 +14,14 @@ import com.board.domain.post.dto.PostSaveDto;
 import com.board.file.dto.FileDto;
 
 public interface PostService {
-	Long save(PostSaveDto postSaveDto);
+	Post save(PostSaveDto postSaveDto,List<Long> existIdx);
 	List<PostInfoDto> getPageList(Pageable pageable);
 //	Page<Post> findByTitleContaining(String title,Pageable pageable);
-	Page<PostInfoDto> SearchPost(String type, String word, Pageable pageable);
-	PostInfoDto getPost(Long idx);
+	Page<PostInfoDto> SearchPost(String type, String word, Pageable pageable,String category);
+	PostInfoDto getPost(Long idx,String category);
 	Page<PostInfoDto> getPostList(String username,Pageable pageable);
 	
 	
-	void deletePost(Long boardIdx);
+	void deletePost(Long boardIdx,String category);
+	void managerDeletePost(Long boardIdx,String category);
 }

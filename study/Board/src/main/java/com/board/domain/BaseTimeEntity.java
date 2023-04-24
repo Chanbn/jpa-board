@@ -25,4 +25,10 @@ public abstract class BaseTimeEntity {
     @Column(updatable = true)
     private LocalDateTime lastModifiedDate;
 	
+    @Column(updatable = true)
+    private LocalDateTime deletedDate;
+    
+    public void setDeletedDate(LocalDateTime deletedDate) {
+        this.deletedDate = deletedDate;
+    }
 }

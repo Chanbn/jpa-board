@@ -1,5 +1,7 @@
 package com.board.domain.member.dto;
 
+import java.util.List;
+
 import com.board.domain.member.Member;
 
 import lombok.Builder;
@@ -15,6 +17,7 @@ public class MemberInfoDto {
 	private String nickname;
 	private String email;
 	private Long id;
+	private List<String> roles;
 	
 	@Builder
 	public MemberInfoDto(Member member) {
@@ -22,6 +25,7 @@ public class MemberInfoDto {
 		this.nickname = member.getNickname();
 		this.email = member.getEmail();
 		this.id = member.getId();
+		this.roles = member.getRoles();
 	}
 	
 	@Builder

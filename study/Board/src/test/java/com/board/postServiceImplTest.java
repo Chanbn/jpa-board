@@ -93,24 +93,24 @@ private MockMvc mvc;
 
 
 
-@WithUserDetails(value = "abc123")
-@Test
-@Rollback(false)
-public void writetest() {
-	PostSaveDto postSaveDto = new PostSaveDto(title,content);
-
-	for(int i=0;i<1;i++) {
-		postSaveDto.setTitle(title+i);
-		postSaveDto.setContent(content+i);
-		Post post = postSaveDto.toEntity();
-		post.confirmWriter(memberRepository.findByUsername("abc123").orElseThrow(()-> new MemberException(MemberExceptionType.NOT_FOUND_MEMBER)));
-		
-		postRepository.save(post);
-	}
+//@WithUserDetails(value = "abc123")
+//@Test
+//@Rollback(false)
+//public void writetest() {
+//	PostSaveDto postSaveDto = new PostSaveDto(title,content);
+//
+//	for(int i=0;i<1;i++) {
+//		postSaveDto.setTitle(title+i);
+//		postSaveDto.setContent(content+i);
+//		Post post = postSaveDto.toEntity();
+//		post.confirmWriter(memberRepository.findByUsername("abc123").orElseThrow(()-> new MemberException(MemberExceptionType.NOT_FOUND_MEMBER)));
+//		
+//		postRepository.save(post);
+//	}
 //	List<Post> findPostList = findPostList();
 //    Post post = em.find(Post.class, findPostList.get(6).getIdx());
 //    assertThat(post.getContent()).isEqualTo(content);
-}
+//}
 
 
 }

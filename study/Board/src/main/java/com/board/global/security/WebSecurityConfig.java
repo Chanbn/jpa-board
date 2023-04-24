@@ -29,24 +29,25 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	protected void configure(HttpSecurity http) throws Exception {
 		// TODO Auto-generated method stub
 		http.authorizeRequests()
-		.antMatchers("/board/list","/category/**").permitAll()
-		.antMatchers("/member/profile","/member/postinfo","/member/commentInfo","/myPage/home","/board/write").authenticated()
+		.antMatchers("/board/**/list","/board/**/get").permitAll()
+		.antMatchers("/member/profile","/member/postinfo","/member/commentInfo","/myPage/home","/board/**/write").authenticated()
+		.antMatchers("/board/**/manage/list").hasRole("ADMIN")
 		.and()
 		.formLogin()
 		.loginPage("/member/login")
 		.loginProcessingUrl("/member/loginProc") // 추가
 		.usernameParameter("username")
 		.passwordParameter("password")
-		.defaultSuccessUrl("/board/list")
-		.failureForwardUrl("/board/list") 
+		.defaultSuccessUrl("/home")
+		.failureForwardUrl("/home") 
 		.and()
 		.logout()
 		.logoutUrl("/view/logoutProc")
-		.logoutSuccessUrl("/board/list")
+		.logoutSuccessUrl("/home")
 		.and()
-		.exceptionHandling()
-		.accessDeniedHandler(new CustomAccessDeniedHandler())
-		.and()
+//		.exceptionHandling()
+//		.accessDeniedHandler(new CustomAccessDeniedHandler())
+//		.and()
 		.csrf();
 	}
 	

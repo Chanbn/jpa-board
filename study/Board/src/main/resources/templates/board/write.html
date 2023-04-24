@@ -7,6 +7,8 @@
 <title>Insert title here</title>
 </head>
 <body>
+<h1>{{category}} 목록</h1>
+
         <div sec:authorize="isAuthenticated()">
         <span th:text="${session.user.username}">    </span> 
     <span sec:authentication="name"></span>님이 로그인 상태 
@@ -88,7 +90,7 @@
 <div id="btnDiv" class="col-lg-6">
 
 <div style="float:left">
-<a th:href="@{'/board/list?pageNum=0'}" type="button" class="btn btn-secondary">목록</a>
+<a th:href="@{'/board/'+${category}+'/list?pageNum=0'}" type="button" class="btn btn-secondary">목록</a>
 </div>
 <div style="float:right">
 <button type="button" class="btn btn-success" onclick="submit_button()">등록</button>
@@ -174,7 +176,7 @@
 	
 	
 	function submit_button(){
-		
+		var category = /*[[${category}]]*/ '';
 		const title = document.getElementById("title").value;
 		const content = document.getElementById("content").value;
 		const fileDivs = $('div[data-name="fileDiv"]');
@@ -192,14 +194,14 @@
 		}
 		$.ajax({
 			type:"POST",
-			url:"/board/posts",
+			url:"/board/"+category+"/posts",
 			processData: false,  // 데이터 객체를 문자열로 바꿀지에 대한 값이다. true면 일반문자...
 		    contentType: false,  // 해당 타입을 true로 하면 일반 text로 구분되어 진다.
 		    data: sendingData,  //위에서 선언한 fromdata
 			success: function(data){
 				if(data){
 					alert("등록되었습니다.");
-					window.location.href = '/board/list';
+					window.location.href = '/board/'+category+'/list';
 				}
 			},
 			error : function(request,status,error){

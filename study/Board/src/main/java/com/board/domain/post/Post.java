@@ -29,14 +29,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 
 @Table(name = "board")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Entity
+@Entity(name = "Post")
 @ToString
+@Slf4j
 public class Post extends BaseTimeEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -49,8 +51,6 @@ public class Post extends BaseTimeEntity {
 	private Member writer;
 	
 	private String content;
-	@Column(nullable = false)
-	private String email;
 	private String deleteYn;
 
 	private String category;
@@ -67,8 +67,10 @@ public class Post extends BaseTimeEntity {
 	  
 	  public void addFile(boardFile files)
 	  {
+		  log.info("addFile....");
 		  fileLists.add(files);
 		  files.setPost(this);
+		  log.info("addFile....완료");
 	  }
 	  
 	  @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -78,7 +80,11 @@ public class Post extends BaseTimeEntity {
 		  comments.add(comment);
 		  comment.setPost(this);		  
 	  }
-	  
+	 
+	  public void update(String title,String content) {
+		  this.title = title;
+		  this.content = content;
+	  }
     public void updateTitle(String title) {
         this.title = title;
     }
@@ -96,5 +102,6 @@ public class Post extends BaseTimeEntity {
     	this.writer = writer;
     }
 
+    
 	 
 }

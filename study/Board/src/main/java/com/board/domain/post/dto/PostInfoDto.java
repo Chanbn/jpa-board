@@ -23,6 +23,7 @@ public class PostInfoDto {
 	private MemberInfoDto writer;
 	private List<CommentGetDto> comments;
 	private String category;
+	private String deleteYn;
 	
 	public PostInfoDto(Post post){
 		
@@ -36,6 +37,7 @@ public class PostInfoDto {
 				.collect(Collectors.toList());
 		this.createdDate = post.getCreatedDate();
 		this.category=post.getCategory();
+		this.deleteYn = post.getDeleteYn();
 	}
 
 	

@@ -1,10 +1,15 @@
 package com.board.domain.comment.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.events.Event.ID;
@@ -13,11 +18,17 @@ import com.board.domain.comment.Comment;
 import com.board.domain.comment.dto.CommentGetDto;
 import com.board.domain.comment.dto.CommentInfoDto;
 import com.board.domain.comment.dto.CommentSaveDto;
+import com.board.domain.comment.exception.CommentException;
+import com.board.domain.comment.exception.CommentExceptionType;
 import com.board.domain.comment.repository.CommentRepository;
 import com.board.domain.member.Member;
+import com.board.domain.member.exception.MemberException;
+import com.board.domain.member.exception.MemberExceptionType;
 import com.board.domain.member.repository.MemberRepository;
 import com.board.domain.post.Post;
 import com.board.domain.post.repository.PostRepository;
+import com.board.global.Login.MemberDetails;
+import com.board.global.Login.MemberDetailsService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,13 +41,14 @@ public class CommentServiceImpl implements CommentService {
 	private final CommentRepository commentRepository;
 	private final MemberRepository memberRepository;
 	private final PostRepository postRepository;
+	private final MemberDetailsService memberDetailsService;
 	
 	@Override
-	public void save(CommentSaveDto commentData) {
+	public void save(CommentSaveDto commentData,String category) {
 		// TODO Auto-generated method stub
 
 		Member member = memberRepository.findById(commentData.getUserId()).orElseThrow();
-		Post post =postRepository.findByIdx(commentData.getPostId()).orElseThrow();
+		Post post =postRepository.findByIdxAndCategory(commentData.getPostId(),category).orElseThrow();
 		log.info("save class... commentData.parentId ='"+commentData.getParentId()+"'");
 		Comment parentComment ;
 		if(commentData.getParentId()==null) {
@@ -70,10 +82,24 @@ public class CommentServiceImpl implements CommentService {
 	}
 
 	@Override
-	public void delete(Long idx) {
+	public void delete(Long idx,Authentication auth) {
 		// TODO Auto-generated method stub
-		Comment c = commentRepository.findById(idx).orElseThrow();
+		if(auth==null || auth instanceof AnonymousAuthenticationToken) {
+			throw new MemberException(MemberExceptionType.WRONG_USER);
+		}
+		Comment c = commentRepository.findById(idx).orElseThrow(() -> new CommentException(CommentExceptionType.WRONG_COMMENT));
+		
+		   String username = auth.getName();
+		    UserDetails userDetails = memberDetailsService.loadUserByUsername(username);
+
+		    // 댓글 작성자 또는 관리자 권한이 있는 경우에만 삭제 가능
+		    if (!c.getWriter().getUsername().equals(username) && !userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+		        throw new MemberException(MemberExceptionType.WRONG_ACTIV);
+		    }
+		
+		
 		c.setDelete_yn("Y");
+		c.setDeletedDate(LocalDateTime.now());
 		commentRepository.save(c);		
 	}
 

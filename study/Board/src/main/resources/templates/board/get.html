@@ -11,7 +11,8 @@
 <body>
 <div th:replace="/fragments/header.html :: fragment-header"></div>
   <div th:replace="/fragments/nav.html :: fragment-nav"></div>
-
+<h1 sec:authorize="!hasRole('user')">You do not have user role.</h1>
+<h1 sec:authorize="hasRole('user')">Has admin Role</h1>
 <div style="text-align:center">
 <table class="table">
   <thead>
@@ -35,15 +36,18 @@
   
   <tr>
   <td colspan="3">
-  <div th:if="${not #lists.isEmpty(fileList)}" >
+<div th:if="${not #lists.isEmpty(fileList)}">
   <label for="input-type-4">File</label>
-  <div class="col-sm-10"> 
-  <a th:each="row,status:${fileList}" th:href="@{/board/download(idx=${row.idx})}">
-  <i aria-hidden="true"></i>
-  [[${row.originalName}]]
-  </a>
+  <div class="col-sm-10">
+    <th:block th:each="row, status: ${fileList}">
+      <a th:href="@{/board/'+${category}+'/download(idx=${row.idx})}">
+        <i aria-hidden="true"></i>
+        [[${row.originalName}]]
+      </a>
+      <br />
+    </th:block>
   </div>
-   	 </div>
+</div>
 
   </tr>
      
@@ -62,12 +66,8 @@
 <div style="float:right">
 <div sec:authorize="isAuthenticated()">
 <button type="button" id="deletePost" class="btn btn-danger" onclick="delete_button()">삭제</button>
-<form th:action="@{'/board/edit'}" method="POST">
-  <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-  <input type="hidden" name="_csrf_header" th:value="${_csrf.headerName}">
-<input type="hidden" name="boardIdx" th:value="${post.idx}">
-<button type="submit" id="editPost" class="btn btn-success" >수정</button>
-</form>
+<a class="btn btn-success"  th:href="@{'/board/'+${category}+'/edit?idx='+${post.idx}}">수정</a>
+
 </div>
 </div>
 </div>
@@ -142,6 +142,7 @@ $(function () {
 	var loginUserName = null;
 	var loginUserEmail = null;
 	var loginUserLongid = null;
+	var loginUserauthority = null;
  
 	$.ajax({
 		url: '/member/current',
@@ -150,9 +151,11 @@ $(function () {
 			loginUserName = user.username;
 			loginUserEmail = user.email;
 			loginUserLongid = user.id;
+			loginUserauthority = user.roles;
 			console.log(loginUserName);
 			console.log(loginUserEmail);
 			console.log(loginUserLongid);
+			console.log(loginUserauthority[0]);
 		},
 		error: function(){
 			console.log('로그인 상태가 아닙니다.');
@@ -177,6 +180,7 @@ $(function () {
  $(document).on("click", "#comment-submit", function(e){
 	e.preventDefault();
 	 console.log(loginUserName);
+	var category = /*[[${category}]]*/ '';
 	 var no =$(this).attr('data-no');
 	 var parentId = null;
 	 var content = null;
@@ -188,7 +192,7 @@ $(function () {
 	 	}
 	    var username = loginUserName ? loginUserName : 'anonymous';
 	    $.ajax({
-	      url: '/comment/add',
+	      url: '/comment/'+category+'/add',
 	      type: 'POST',
 	      contentType: 'application/json; charset=UTF-8',
 	      data: JSON.stringify({
@@ -196,7 +200,8 @@ $(function () {
 	        parentId: parentId,
 	        content: content,
 	        username: username,
-	        userId: loginUserLongid
+	        userId: loginUserLongid,
+	        category: category 
 	      }),
 	      success: function(response){
 	        location.reload();
@@ -243,6 +248,10 @@ $(function () {
 		    html += "<time datetime='" + comment.createDate + "'>" + new Date(comment.createDate).toLocaleString() + "</time>";  
 		    if(comment.delete_yn=='N' && loginUserName == comment.writer.username){
 		    html += "<button class='delete-button' data-no='"+comment.idx+"'> </button>";}
+			if(comment.delete_yn=='N' && loginUserauthority[0]=='ROLE_ADMIN'){				
+			html += "<button class='delete-button' data-no='"+comment.idx+"'> </button>";
+			}
+		    
 		    html += "<span>";
 		    html += "</div>";
 		    html += "<span>" + comment.content + "</span>"
@@ -309,15 +318,17 @@ $(function () {
 
 	function delete_button(){
 		var boardIdx = parseInt([[${post.idx}]]);
+		var category = /*[[${category}]]*/ '';
 	$.ajax({
 		method: "DELETE",
-		url: "/board/"+boardIdx,
+		url: "/board/"+category+"/delete/"+boardIdx,
 		data: {
-			boardIdx : boardIdx
+			boardIdx : boardIdx,
+			category : category
 		},
 		success: function(data){
 			alert(data);
-			window.location.replace("http://14.47.220.34:8081/board/list");
+			window.location.replace("http://14.47.220.34:8081/home");
 		},
 		error: function(request,status,error) {
 	    	  alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);

@@ -12,4 +12,5 @@ public interface FileService {
 	void delete(String filePath);
 	FileDto getFileDetails(Long idx);
 	List<FileDto> getFileList(Long idx);
+	void saveFile(FileDto fileDto);
 }

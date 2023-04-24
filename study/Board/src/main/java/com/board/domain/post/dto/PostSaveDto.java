@@ -38,7 +38,7 @@ public class PostSaveDto {
 	}
 	
 	public Post toEntity() {
-		return Post.builder().title(title).content(content).build();
+		return Post.builder().title(title).content(content).category(category).build();
 		
 	}
 }

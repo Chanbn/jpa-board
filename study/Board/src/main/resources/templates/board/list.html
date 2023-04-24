@@ -1,17 +1,26 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
+	<meta name="_csrf" th:content="${_csrf.token}"/>
+	<!-- default header name is X-CSRF-TOKEN -->
+	<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+	<!-- ... -->
 <div th:replace="/fragments/header.html :: fragment-header"></div>
 <script src="https://code.jquery.com/jquery.min.js"></script>
 
 </head>
 <body>
 	  <div th:replace="/fragments/nav.html :: fragment-nav"></div>
+	  <h1>{{category}} 목록</h1>
+	  
+<h1 sec:authorize="hasRole('USER')">You do not have user role.</h1>
+<h1 sec:authorize="hasRole('ADMIN')">Has admin Role</h1>
 	  
 	  
 	<table class="table">
   <thead class="table-light">
 	<tr>
+	<th scope="col" sec:authorize="hasRole('ADMIN')">선택</th>
 	<th scope="col">번호</th>
 	<th scope="col">제목</th>
 	<th scope="col">작성자</th>
@@ -21,21 +30,27 @@
   </thead>
   <tbody>
 	<tr th:if="${not #lists.isEmpty(boardList)}" th:each="row : ${boardList}">
+	<td sec:authorize="hasRole('ADMIN')">
+ 	<input type="checkbox" name="selectedIdx" th:value="${row.idx}"/>
+	</td>
 	<td th:text="${row.idx}">	</td>
 	<td> 
- 	<a th:href="@{'/board/get?page='+${page}+'&idx='+${row.idx}}"> 
+ 	<a th:href="@{'/board/'+${category}+'/get?page='+${page}+'&idx='+${row.idx}}"> 
 	<span th:text="${row.title}"></span></a>
 	</td>
 
 	<td th:text="${row.writer.username}"></td>
 	<td th:text="${row.createdDate}">	</td>
 	<!-- <td th:text="${row.viewcount}"></td> -->
+
 	</tr>
 	<tr th:unless="${not #lists.isEmpty(boardList)}">데이터가 없습니다.</tr>
   </tbody>
 </table>
 
-
+<div>
+<button sec:authorize="hasRole('ADMIN')" onClick="postDelete()" class="btn btn-danger">삭제</button>
+</div>
 <form  th:attr="action=@{/board/list?}">
 <select th:name="type" th:value="${type}">
 	<option th:value="'T'" th:selected="${type}=='T'" th:text="제목"></option>
@@ -55,7 +70,7 @@
 
 
 
- <a th:href="@{'/board/write'}" type="button" class="btn btn-primary" style="float:right">글쓰기</a>
+ <a th:href="@{'/board/'+${category}+'/write'}" type="button" class="btn btn-primary" style="float:right">글쓰기</a>
 <nav aria-label="...">
   <ul class="pagination justify-content-center">
 
@@ -88,7 +103,54 @@ Next</a>
         alert("삭제되었습니다.");
     }
     
+  
+    
+	function postDelete(){
 
+		    const selectedIdx = [];
+		    let isChecked = false;
+			  const checkboxes = document.getElementsByName('selectedIdx');
+			    if (selectedIdx.length === 0) {
+			    	  alert('선택된 체크박스가 없습니다.');
+			    	  return false;
+			    	}
+			  for (let i = 0; i < checkboxes.length; i++) {
+    			if (checkboxes[i].checked) {
+			      selectedIdx.push(checkboxes[i].value);
+			      isChecked = true;
+    				}
+  					}
+  console.log(selectedIdx); // 선택된 체크박스의 값들을 콘솔에 출력
+  // 이후 선택된 체크박스들의 값을 서버로 전송하는 코드를 작성
+if(isChecked){
+	alert("삭제할 항목을 선택해주세요.");
+	return false;
+}
+  var category = /*[[${category}]]*/ '';
+  $.ajax({
+	 method : "PUT",
+	 contentType: 'application/json',
+	    data: JSON.stringify({
+	        "boardIdx": selectedIdx,
+	        "category": category
+	      }),
+	 url : "/board/"+category+"/manage/list",
+	    beforeSend: function(xhr) {
+	        var token = $("meta[name='_csrf']").attr("content");
+	        var header = $("meta[name='_csrf_header']").attr("content");
+	        xhr.setRequestHeader(header, token);
+	    },
+	 success: function(data){
+			alert(data);
+			/* window.location.replace("http://14.47.220.34:8081/board/"+category+"/list"); */
+		},
+		error: function(request,status,error) {
+	    	  alert("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+	    	  console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+	      }
+  });
+		  
+	}
 	  
     
     		
