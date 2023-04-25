@@ -29,6 +29,22 @@
 	</tr>
   </thead>
   <tbody>
+  	
+
+	<tr th:if="${not #lists.isEmpty(noticeList)}" th:each="row : ${noticeList}" style="background-color: #e3f2fd;">
+	<td sec:authorize="hasRole('ADMIN')">
+ 	<input type="checkbox" name="selectedIdx" th:value="${row.idx}"/>
+	</td>
+	<td th:text="${row.idx}">	</td>
+	<td> 
+ 	<a th:href="@{'/board/'+${category}+'/get?page='+${page}+'&idx='+${row.idx}}"> 
+	<span th:text="${row.title}"></span></a>
+	</td>
+
+	<td th:text="${row.writer.username}"></td>
+	<td th:text="${row.createdDate}">	</td>
+  	</tr>
+  	
 	<tr th:if="${not #lists.isEmpty(boardList)}" th:each="row : ${boardList}">
 	<td sec:authorize="hasRole('ADMIN')">
  	<input type="checkbox" name="selectedIdx" th:value="${row.idx}"/>
@@ -69,24 +85,32 @@
 
 
 
+<div th:if="${category == 'notice' and #authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+    <!-- 해당 조건이 참일 경우 버튼을 표시하지 않음 -->
+    <a th:href="@{'/board/'+${category}+'/write'}" type="button" class="btn btn-primary" style="float:right">글쓰기</a>
+</div>
+<div th:if="${category != 'notice'}">
+    <!-- 해당 조건이 거짓일 경우 버튼을 표시 -->
+    <a th:href="@{'/board/'+${category}+'/write'}" type="button" class="btn btn-primary" style="float:right">글쓰기</a>
+</div>
 
- <a th:href="@{'/board/'+${category}+'/write'}" type="button" class="btn btn-primary" style="float:right">글쓰기</a>
 <nav aria-label="...">
   <ul class="pagination justify-content-center">
 
     <li class="page-item" th:classappend="${prev==true ? '' : 'disabled'}">
-    	<a class="page-link" th:href="@{/board/list(page=${startpage-1},type=${type},word=${word})}">
+    	<a class="page-link" th:href="@{/board/{category}/list(category=${category},page=${startpage-1},type=${type},word=${word})}">
 Previous</a>
     </li>
     <th:block th:each="num : ${#numbers.sequence(startpage,endpage)}">
     <li class="page-item" th:classappend="${page+1 == num ? 'active':''}">
 
-    <a class="page-link" th:href="@{/board/list(page=${num},type=${type},word=${word})}"><text th:text="${num}">
-    </a></li>
+    <a class="page-link" th:href="@{/board/{category}/list(category=${category},page=${num},type=${type},word=${word})}"><text th:text="${num}"></a>
+    
+    </li>
 	</th:block>
 
     <li th:if="${next}" class="page-item" >
-    	<a class="page-link" th:href="@{/board/list(page=${endpage+1},type=${type},word=${word})}">
+    	<a class="page-link" th:href="@{/board/{category}/list(category=${category},page=${endpage+1},type=${type},word=${word})}">
 Next</a>
     </li>
   </ul>

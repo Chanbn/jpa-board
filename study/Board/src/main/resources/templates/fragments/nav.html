@@ -28,15 +28,22 @@
   <div class="container-fluid">
     <div class="collapse navbar-collapse" id="navbarNavDropdown">
       <ul class="navbar-nav ms-auto">
-        <li><span sec:authorize="isAuthenticated()" sec:authentication="name" style='color: #fff;'></span></li>
+      
+<li sec:authorize="hasRole('ROLE_ADMIN')">
+<a th:href="@{'/member/list'}">
+<span sec:authentication="name" style='color: #fff;'></span>
+</a>
+</li>
+<li sec:authorize="hasRole('ROLE_USER')"><span sec:authentication="name" style='color: #fff;'></span></li>
+
 			<li class="nav-item dropdown"  sec:authorize="isAuthenticated()">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false" style='color: #fff;'>
             프로필
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-			<li><a class="dropdown-item" th:href="@{/member/profile(username=${session.user?.username})}" style='color: #fff;'>회원정보수정</a></li>
- 			<li><a class="dropdown-item" th:href="@{/member/postinfo(username=${session.user?.username})}" style='color: #fff;'>게시글목록</a></li>           
-			<li><a class="dropdown-item" th:href="@{/member/commentInfo(username=${session.user?.username})}" style='color: #fff;'>댓글목록</a></li>
+			<li><a class="dropdown-item" th:href="@{/member/profile(username=${session.user?.username})}" style='color: black;'>회원정보수정</a></li>
+ 			<li><a class="dropdown-item" th:href="@{/member/postinfo(username=${session.user?.username})}" style='color: black;'>게시글목록</a></li>           
+			<li><a class="dropdown-item" th:href="@{/member/commentInfo(username=${session.user?.username})}" style='color: black;'>댓글목록</a></li>
           </ul>
         </li>
         

@@ -3,8 +3,13 @@ package com.board.global.Login;
 
 
 
+import java.util.Collection;
+
 import javax.servlet.http.HttpSession;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -39,4 +44,9 @@ public class MemberDetailsService implements UserDetailsService{
 	}
 
 
+	public boolean checkAuthority(String Authority) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		boolean hasRole = authentication.getAuthorities().stream().anyMatch(auth->auth.getAuthority().equals(Authority));
+		return hasRole;
+	}
 }

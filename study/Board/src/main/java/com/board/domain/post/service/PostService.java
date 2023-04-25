@@ -20,7 +20,8 @@ public interface PostService {
 	Page<PostInfoDto> SearchPost(String type, String word, Pageable pageable,String category);
 	PostInfoDto getPost(Long idx,String category);
 	Page<PostInfoDto> getPostList(String username,Pageable pageable);
-	
+
+	List<PostInfoDto> getNoticeList();
 	
 	void deletePost(Long boardIdx,String category);
 	void managerDeletePost(Long boardIdx,String category);

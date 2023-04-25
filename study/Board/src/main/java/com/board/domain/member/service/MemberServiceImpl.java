@@ -1,5 +1,8 @@
 package com.board.domain.member.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -82,6 +85,24 @@ public class MemberServiceImpl implements MemberService {
 		member.updateMember(memberUpdateDto.getNickname(), encodePassword);
 		memberRepository.save(member);
 
+	}
+
+	@Override
+	public List<MemberProfileDto> getList() {
+		// TODO Auto-generated method stub
+		List<MemberProfileDto> list = memberRepository.findAll().stream()
+											   .map(member -> new MemberProfileDto(member))
+											   .filter(member->("N").equals(member.getDelete_yn()))
+											   .collect(Collectors.toList());
+		return list;
+	}
+
+	@Override
+	public void deleteMember(String username) {
+		// TODO Auto-generated method stub
+		Member member = memberRepository.findByUsername(username).orElseThrow(()->new MemberException(MemberExceptionType.WRONG_USER));
+		member.setDeleteYn("Y");
+		memberRepository.save(member);
 	}
 
 

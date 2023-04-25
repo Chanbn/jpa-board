@@ -143,6 +143,14 @@ public void managerDeletePost(Long boardIdx, String category) {
 	post.setDeletedDate(LocalDateTime.now());
 	postRepository.save(post);
 }
+@Override
+public List<PostInfoDto> getNoticeList() {
+	// TODO Auto-generated method stub
+	List<PostInfoDto> list = postRepository.findTop5ByCategoryOrderByCreatedDateDesc("notice").stream()
+																						.map(post->new PostInfoDto(post))
+																						.collect(Collectors.toList());
+	return list;
+}
 
 
 

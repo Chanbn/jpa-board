@@ -25,6 +25,7 @@ public class MemberSessionDto {
 	private String name;
 	private String email;
 	private String nickname;
+	private String delete_yn;
 	private List<String> roles;
 	
 	@Builder
@@ -36,5 +37,6 @@ public class MemberSessionDto {
 		this.email = member.getEmail();
 		this.nickname = member.getNickname();
 		this.roles = member.getRoles();
+		this.delete_yn = member.getDelete_yn();
 	}
 }

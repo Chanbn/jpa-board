@@ -19,5 +19,6 @@ public class MemberDetailDto {
 	private Long id;
 	private List<CommentGetDto> commentList;
 	private List<PostInfoDto> hh;
+	private String delete_yn;
 
 }

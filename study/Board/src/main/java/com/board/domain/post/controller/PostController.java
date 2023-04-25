@@ -47,6 +47,7 @@ import com.board.domain.post.dto.PostSaveDto;
 import com.board.domain.post.service.PostService;
 import com.board.file.dto.FileDto;
 import com.board.file.service.FileService;
+import com.board.global.Login.MemberDetailsService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -65,6 +66,7 @@ public class PostController {
 	
 	private final PostService postService;
 	private final FileService fileService;
+	private final MemberDetailsService memberDetailsService;
 	LastPageDto lastPage = new LastPageDto();
 	
 	
@@ -87,6 +89,10 @@ public class PostController {
 	    if (category != null) {
 	        model.addAttribute("category", category);
 	    }
+	    
+	    List<PostInfoDto> noticeList = postService.getNoticeList();
+	    
+	    model.addAttribute("noticeList",noticeList);
 		model.addAttribute("boardList",pageList);
 		model.addAttribute("prev",pageList.hasPrevious());
 		model.addAttribute("next",nextPage);
@@ -94,21 +100,14 @@ public class PostController {
 		model.addAttribute("startpage",startpage);
 		model.addAttribute("endpage",endpage);
 		
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-		Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-
-		boolean hasAdminRole = authorities.stream()
-		        .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+		boolean hasAdminRole = memberDetailsService.checkAuthority("ROLE_ADMIN");
 
 		if (hasAdminRole) {
 		    // "user" 역할이 있는 경우의 처리
 			log.info("admin의 권한을 가지고 있습니다.");
-			log.info(authorities.toString());
 		} else {
 		    // "user" 역할이 없는 경우의 처리
 			log.info("admin의 권한을 가지고 있지않습니다.");
-			log.info(authorities.toString());
 		}
 		
 		
@@ -123,6 +122,14 @@ public class PostController {
 			log.info("로그인한 유저가 아님. redirect:/member/login ");
 	        return "redirect:/member/login";
 	    }
+		
+		if(category.equals("notice")) {
+			boolean hasAdminRole = memberDetailsService.checkAuthority("ROLE_ADMIN");
+			if(!hasAdminRole)
+				{log.error("관리자가 아닌 사용자가 공지사항 글쓰기 접근");
+					return "/home";
+				}
+			}
 		
 	    if (category != null) {
 	        model.addAttribute("category", category);
@@ -140,11 +147,18 @@ public class PostController {
 
 	@ResponseBody
 	@PostMapping(value = "/{category}/posts",consumes = "multipart/form-data")
-	public ResponseEntity<String> add(PostSaveDto board, @SessionAttribute("user") MemberSessionDto member,
+	public ResponseEntity<String> add(@RequestParam("category") String category,PostSaveDto board, @SessionAttribute("user") MemberSessionDto member,
 			@RequestParam(value = "existIdx", required = false) List<Long> existIdx) {
-		List<Long> didi = existIdx;
-		log.debug("PostController - add method--------------------------------------------------");
-		log.info("idx :'"+board.getIdx()+"'");
+		log.info("PostController - add method--------------------------------------------------");
+
+		if(category.equals("notice")) {
+			boolean hasAdminRole = memberDetailsService.checkAuthority("ROLE_ADMIN");
+			if(!hasAdminRole)
+				{log.error("관리자가 아닌 사용자가 공지사항 글쓰기 접근");
+					return ResponseEntity.ok("잘못된 요청입니다.");
+				}
+			}
+		
 		MemberInfoDto memberInfoDto = new MemberInfoDto();
 		memberInfoDto.setDto(member);
 		board.setWriter(memberInfoDto);
@@ -233,17 +247,9 @@ public class PostController {
 		if(dataList.getCategory().isEmpty()||dataList.getBoardIdx().isEmpty()) {
 			return ResponseEntity.ok("선택된 항목이 없습니다.");
 		}
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-		Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-
-		boolean hasAdminRole = authorities.stream()
-		        .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
-
+		boolean hasAdminRole = memberDetailsService.checkAuthority("ROLE_ADMIN");
 		if (hasAdminRole) {
 		    // "admin" 역할이 있는 경우의 처리
-			log.info("admin의 권한을 가지고 있습니다.");
-			log.info(authorities.toString());
 			log.info("admin의 권한을 가지고 있습니다.");
 			for(Long i : dataList.getBoardIdx()) {
 				postService.managerDeletePost(i, category);
@@ -252,7 +258,6 @@ public class PostController {
 		} else {
 		    // "admin" 역할이 없는 경우의 처리
 			log.info("admin의 권한을 가지고 있지않습니다.");
-			log.info(authorities.toString());
 		}
 
 		return ResponseEntity.ok("잘못된 요청입니다.");

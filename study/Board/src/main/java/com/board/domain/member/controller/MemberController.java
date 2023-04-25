@@ -1,6 +1,7 @@
 package com.board.domain.member.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
@@ -15,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,11 +34,13 @@ import com.board.domain.member.dto.MemberProfileDto;
 import com.board.domain.member.dto.MemberSignUpDto;
 import com.board.domain.member.dto.MemberUpdateDto;
 import com.board.domain.member.exception.MemberException;
+import com.board.domain.member.repository.MemberRepository;
 import com.board.domain.member.service.MemberService;
 import com.board.domain.post.dto.LastPageDto;
 import com.board.domain.post.dto.PostInfoDto;
 import com.board.domain.post.service.PostService;
 import com.board.global.Login.MemberDetails;
+import com.board.global.Login.MemberDetailsService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +53,7 @@ public class MemberController {
 	private final MemberService memberService;
 	private final PostService postService;
 	private final CommentService commentService;
+	private final MemberDetailsService memberDetailsService;
 
 	@GetMapping(value = "/login")
 	public void login() {
@@ -182,8 +187,26 @@ public class MemberController {
 	}
 	
 	@GetMapping("/info")
-	public void getInfo() {
-	
+	public void getInfo(String username,Model model) {
+	log.info("username"+username);
+	model.addAttribute("username", username);
 	}
-
+	
+	@GetMapping("/list")
+	public String getMemberList(Model model) {
+		boolean hasAdminRole = memberDetailsService.checkAuthority("ROLE_ADMIN");
+		if(!hasAdminRole) {
+			return "/home";
+		}
+		List<MemberProfileDto> list =memberService.getList();
+		model.addAttribute("list", list);
+		return "/member/list";
+	}
+	@ResponseBody
+	@DeleteMapping("/delete")
+	public ResponseEntity<String> deleteMember(@RequestParam("username") String username) {
+		memberDetailsService.checkAuthority("ROLE_ADMIN");
+		memberService.deleteMember(username);
+		return ResponseEntity.ok("회원탈퇴 시켰습니다.");
+	}
 }

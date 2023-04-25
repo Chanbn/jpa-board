@@ -16,6 +16,7 @@ public class MemberProfileDto {
 	private String nickname;
 	private String email;
 	private Long id;
+	private String delete_yn;
 	
 	@Builder
 	public MemberProfileDto(Member member) {
@@ -24,6 +25,7 @@ public class MemberProfileDto {
 		this.email = member.getEmail();
 		this.id = member.getId();
 		this.name = member.getName();
+		this.delete_yn = member.getDelete_yn();
 	}
 	
 	@Builder
@@ -33,6 +35,7 @@ public class MemberProfileDto {
 		this.email = member.getEmail();
 		this.id = member.getId();
 		this.name = member.getName();
+		this.delete_yn = member.getDelete_yn();
 	}
 	
 	public Member toEntity() {
@@ -42,6 +45,7 @@ public class MemberProfileDto {
 				.nickname(nickname)
 				.email(email)
 				.name(name)
+				.delete_yn(delete_yn)
 				.build();
 	}
 }

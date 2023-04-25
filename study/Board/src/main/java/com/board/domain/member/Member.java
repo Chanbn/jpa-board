@@ -24,6 +24,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -76,6 +77,9 @@ public class Member implements Serializable{
 	@Column
 	private String nickname;
 	
+	@ColumnDefault("N")
+	private String delete_yn;
+	
 //	@Enumerated(EnumType.STRING)
 //	private Role role;
 	
@@ -118,5 +122,8 @@ public class Member implements Serializable{
 		this.password = password;
 	}
 
+	public void setDeleteYn(String deleteYn) {
+		this.delete_yn =deleteYn;
+	}
 	
 }

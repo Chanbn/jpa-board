@@ -25,6 +25,7 @@ public class PostInfoDto {
 	private String category;
 	private String deleteYn;
 	
+	
 	public PostInfoDto(Post post){
 		
 		this.idx = post.getIdx();

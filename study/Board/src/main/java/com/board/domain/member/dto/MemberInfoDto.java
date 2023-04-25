@@ -18,7 +18,7 @@ public class MemberInfoDto {
 	private String email;
 	private Long id;
 	private List<String> roles;
-	
+	private String delete_yn;
 	@Builder
 	public MemberInfoDto(Member member) {
 		this.username = member.getUsername();
@@ -26,6 +26,7 @@ public class MemberInfoDto {
 		this.email = member.getEmail();
 		this.id = member.getId();
 		this.roles = member.getRoles();
+		this.delete_yn = member.getDelete_yn();
 	}
 	
 	@Builder

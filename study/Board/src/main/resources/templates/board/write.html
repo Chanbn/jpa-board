@@ -183,6 +183,7 @@
 		const sendingData = new FormData();
 		const files=[];
 		
+		sendingData.append('category',category);
 		sendingData.append('title',title);
 		sendingData.append('content',content);
 		alert($('#file_0').val()+"!!!!");
