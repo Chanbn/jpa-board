@@ -47,6 +47,14 @@ public class MemberSignUpDto {
     	this.email = email;
     }
     
+    public MemberSignUpDto(Member member) {
+    	this.username = member.getUsername();
+    	this.nickname = member.getNickname();
+    	this.name = member.getName();
+    	this.password = member.getPassword();
+    	this.email = member.getEmail();    	
+    }
+    
     public Member toEntity() {
     	return Member.builder().username(username).nickname(nickname).name(name).password(password).email(email).build();
     }

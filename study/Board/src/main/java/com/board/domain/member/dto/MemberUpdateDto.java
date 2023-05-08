@@ -5,10 +5,12 @@ import com.board.domain.member.Member;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@ToString
 public class MemberUpdateDto {
 
 	private String username;
@@ -17,9 +19,11 @@ public class MemberUpdateDto {
 	
 	
 	public Member toEntity() {
-		return Member.builder()
+		Member member = Member.builder()
 				.nickname(nickname)
 				.password(password)
 				.build();
+
+		return member;
 	}
 }

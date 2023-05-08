@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.board.domain.member.Member;
 import com.board.domain.member.dto.MemberInfoDto;
@@ -23,24 +24,20 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class MemberServiceImpl implements MemberService {
 	private final MemberRepository memberRepository;
-	private final PasswordEncoder passwordEncoder;
-	private final AuthenticationManagerBuilder authenticationManagerBuilder;
+//	private final AuthenticationManagerBuilder authenticationManagerBuilder;
 	private final BCryptPasswordEncoder bCryptPasswordEncoder;
+	
 	@Override
-	public void signup(MemberSignUpDto memberSignUpDto) {
+	public Member signup(MemberSignUpDto memberSignUpDto) {
 		// TODO Auto-generated method stub
 		Member member = memberSignUpDto.toEntity();
-		log.info("here");
 		member.addRoles_USER();
-		log.info("why");
-		member.encodePassword(passwordEncoder);
+		member.encodePassword(bCryptPasswordEncoder);
 
-		if (memberRepository.existsByUsername(member.getUsername())) {
-			throw new MemberException(MemberExceptionType.ALREADY_EXIST_USERNAME);
-		}
-		memberRepository.save(member);
+		return memberRepository.save(member);
 	} 
 
 	@Override
@@ -49,14 +46,14 @@ public class MemberServiceImpl implements MemberService {
 		int check = 0;
 		switch (type) {
 		case 1:
-			check = memberRepository.existsByUsername(word)==true?1:0;			
-			break;
+			check = memberRepository.existsByUsername(word)==true?1:0;	
+			throw new MemberException(MemberExceptionType.ALREADY_EXIST_USERNAME);
 		case 2:
 			check = memberRepository.existsByNickname(word)==true?1:0;
-			break;
+			throw new MemberException(MemberExceptionType.ALREADY_EXIST_NICKNAME);
 		case 3:
 			check = memberRepository.existsByEmail(word)==true?1:0;
-			break;
+			throw new MemberException(MemberExceptionType.ALREADY_EXIST_EMAIL);
 		default:
 			break;
 		}
@@ -78,12 +75,13 @@ public class MemberServiceImpl implements MemberService {
 	}
 
 	@Override
-	public void updateProfile(MemberUpdateDto memberUpdateDto) {
+	public Member updateProfile(MemberUpdateDto memberUpdateDto) {
 		// TODO Auto-generated method stub
 		Member member = memberRepository.findByUsername(memberUpdateDto.getUsername()).orElseThrow(()->new MemberException(MemberExceptionType.NOT_FOUND_MEMBER));
 		String encodePassword = bCryptPasswordEncoder.encode(memberUpdateDto.getPassword());
 		member.updateMember(memberUpdateDto.getNickname(), encodePassword);
-		memberRepository.save(member);
+		member = memberRepository.save(member);
+		return member;
 
 	}
 

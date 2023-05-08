@@ -40,7 +40,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Table(name = "USERS")
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -114,8 +116,10 @@ public class Member implements Serializable{
     }
 	
 	public void updateMember(String nickname, String password) {
+		log.info("here is this password: "+password);		
 		this.nickname = nickname;
-		this.password=password;
+		this.password = password;
+		log.info("here is this password: "+this.password);
 	}
 	
 	public void setPassword(String password) {
